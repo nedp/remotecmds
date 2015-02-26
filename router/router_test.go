@@ -53,8 +53,8 @@ func TestParams(t *testing.T) {
 	assert.Equal(t, 5, p.BB, "wrong Params.B")
 }
 
-func TestParseRoute(t *testing.T) {
-	r, err := ParseRoute([]byte(testString), Routes)
+func TestRouteForRequest(t *testing.T) {
+	r, err := RouteForRequest([]byte(testString), Routes)
 	if err != nil {
 		t.Fatal(err.Error())
 	}
