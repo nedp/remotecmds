@@ -1,0 +1,11 @@
+1. Reformat declaration comments to be full sentences...
+    "X takes a Y and does Z."
+
+2. Change empty slice declarations to
+    `var t []string`
+    instead of
+    `t := []string{}`
+    because it's more memory efficient.
+
+3. Change error messages to phrases instead of sentences.
+    (start lowercase, no ending punctuation)
