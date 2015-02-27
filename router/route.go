@@ -11,7 +11,7 @@ import (
 
 const seperator = ":\n"
 
-func SequenceFor(request []byte, routes func(string) (Route, bool)) (sequence.RunAller, error) {
+func SequenceFor(request []byte, routes map[string]func() Route) (sequence.RunAller, error) {
 	rt, err := RouteFor(request, routes)
 	if err != nil {
 		return nil, err
@@ -21,11 +21,11 @@ func SequenceFor(request []byte, routes func(string) (Route, bool)) (sequence.Ru
 
 type Route struct {
 	Name string
-	Fn func(Params) sequence.RunAller
+	NewSequence RunAllerMaker
 	Params Params
 }
 
-func RouteFor(request []byte, routes func(string) (Route, bool)) (Route, error) {
+func RouteFor(request []byte, routes map[string]func() Route) (Route, error) {
 	// Strip leading whitespace
 	requestString := strings.TrimSpace(string(request))
 	// Parse the command name and TOML params table
@@ -40,20 +40,21 @@ func RouteFor(request []byte, routes func(string) (Route, bool)) (Route, error) 
 	args = split[1]
 
 	// Unmarshal the TOML
-	route, ok := routes(routeName)
+	rtFn, ok := routes[routeName]
 	if !ok {
 		return Route{}, fmt.Errorf("route name \"%s\" not recognised", routeName)
 	}
+	rt := rtFn()
 
-	if _, err := toml.Decode(args, route.Params); err != nil {
+	if _, err := toml.Decode(args, rt.Params); err != nil {
 		return Route{}, fmt.Errorf("couldn't unmarshall arguments (%s)", err.Error())
 	}
 
-	return route, nil
+	return rt, nil
 }
 
 func (rt *Route) Sequence() sequence.RunAller {
-	return rt.Fn(rt.Params)
+	return rt.NewSequence(rt.Params)
 }
 
 type Params interface {

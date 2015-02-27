@@ -20,19 +20,14 @@ type ParamsTest struct {
 // Marker
 func (ParamsTest) IsParams() {}
 
-func Routes(name string) (route Route, ok bool) {
-	ok = true
-	switch name {
-	case "test":
-		route = Route{
+var testRoutes = map[string]func() Route {
+	"test": func() Route {
+		return Route{
 			"test",
 			func(_ Params) sequence.RunAller { return testDummySequence },
 			new(ParamsTest),
 		}
-	default:
-		ok = false
-	}
-	return
+	},
 }
 
 type dummySequence struct {}
@@ -66,7 +61,7 @@ func TestParams(t *testing.T) {
 }
 
 func TestRouteForRequest(t *testing.T) {
-	rt, err := RouteFor([]byte(testString), Routes)
+	rt, err := RouteFor([]byte(testString), testRoutes)
 	if err != nil {
 		t.Fatal(err.Error())
 	}
@@ -78,7 +73,7 @@ func TestRouteForRequest(t *testing.T) {
 }
 
 func TestSequenceFor(t *testing.T) {
-	seq, err := SequenceFor([]byte(testString), Routes)
+	seq, err := SequenceFor([]byte(testString), testRoutes)
 	if err != nil {
 		t.Fatal(err.Error())
 	}

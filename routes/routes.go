@@ -5,17 +5,6 @@ import (
 	"bitbucket.org/nedp/remotecmds/say"
 )
 
-func Routes(name string) (route router.Route, ok bool) {
-	ok = true
-	switch name {
-	case "say":
-		route = router.Route{
-			"say",
-			say.New,
-			new(say.Params),
-		}
-	default:
-		ok = false
-	}
-	return
+func AddRoutesTo(r router.Interface) {
+	r.AddRoute("say", say.NewSequence, say.NewParams)
 }

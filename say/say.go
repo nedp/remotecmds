@@ -23,13 +23,16 @@ type Params struct {
 	Quote string
 }
 func (Params) IsParams() {} // Marker
+func NewParams() router.Params {
+	return new(Params)
+}
 
 // Creates a new sequence (bitbucket.org/nedp/command/sequence)
 // for saying `quote`.
 //
 // Returns
 // the created sequence.
-func New(routeParams router.Params) s.RunAller {
+func NewSequence(routeParams router.Params) s.RunAller {
 	p := params{
 		routeParams.(Params).Quote,
 		make(chan *exec.Cmd, 1),
