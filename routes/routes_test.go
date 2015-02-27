@@ -1,4 +1,4 @@
-package say_test
+package routes
 
 import (
 	"testing"
@@ -8,13 +8,14 @@ import (
 
 	"github.com/stretchr/testify/assert"
 )
+
 const testString = `
 	say:
 	Quote = "This is the route test."
 	`
 
 func TestRoute(t *testing.T) {
-	r, err := router.ParseRoute([]byte(testString), Routes)
+	r, err := router.RouteFor([]byte(testString), Routes)
 
 	if err != nil {
 		t.Fatal(err.Error())

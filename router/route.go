@@ -11,17 +11,21 @@ import (
 
 const seperator = ":\n"
 
+func SequenceFor(request []byte, routes func(string) (Route, bool)) (sequence.RunAller, error) {
+	rt, err := RouteFor(request, routes)
+	if err != nil {
+		return nil, err
+	}
+	return rt.Sequence(), nil
+}
+
 type Route struct {
 	Name string
 	Fn func(Params) sequence.RunAller
 	Params Params
 }
 
-type Params interface {
-	IsParams()
-}
-
-func RouteForRequest(request []byte, routes func(string) (Route, bool)) (Route, error) {
+func RouteFor(request []byte, routes func(string) (Route, bool)) (Route, error) {
 	// Strip leading whitespace
 	requestString := strings.TrimSpace(string(request))
 	// Parse the command name and TOML params table
@@ -47,3 +51,12 @@ func RouteForRequest(request []byte, routes func(string) (Route, bool)) (Route, 
 
 	return route, nil
 }
+
+func (rt *Route) Sequence() sequence.RunAller {
+	return rt.Fn(rt.Params)
+}
+
+type Params interface {
+	IsParams()
+}
+
