@@ -32,7 +32,7 @@ func NewParams() router.Params {
 //
 // Returns
 // the created sequence.
-func NewSequence(routeParams router.Params) s.RunAller {
+func NewSequence(routeParams router.Params) (s.RunAller, <-chan string) {
 	p := params{
 		routeParams.(Params).Quote,
 		make(chan *exec.Cmd, 1),
@@ -69,7 +69,10 @@ func NewSequence(routeParams router.Params) s.RunAller {
 	// Run the last espeak instance.
 	builder = builder.ThenJust(runEspeak(p))
 
-	return builder.End()
+	outCh := make(chan string)
+	close(outCh)
+
+	return builder.End(), outCh
 }
 
 func phrasesIn(quote string) []string {

@@ -6,11 +6,11 @@ import (
 
 const defaultRoutesCapacity = 6
 
-type RunAllerMaker func(Params) sequence.RunAller
+type RunAllerMaker func(Params) (sequence.RunAller, <-chan string)
 
 type Interface interface {
 	RouteFor([]byte) (Route, error)
-	SequenceFor([]byte) (sequence.RunAller, error)
+	SequenceFor([]byte) (sequence.RunAller, <-chan string, error)
 	AddRoute(name string, newSequence RunAllerMaker, newParams func() Params)
 }
 
@@ -28,7 +28,7 @@ func (r Router) RouteFor(request []byte) (Route, error) {
 	return RouteFor(request, r.routes)
 }
 
-func (r Router) SequenceFor(request []byte) (sequence.RunAller, error) {
+func (r Router) SequenceFor(request []byte) (sequence.RunAller, <-chan string, error) {
 	return SequenceFor(request, r.routes)
 }
 

@@ -11,12 +11,14 @@ import (
 
 const seperator = ":\n"
 
-func SequenceFor(request []byte, routes map[string]func() Route) (sequence.RunAller, error) {
+func SequenceFor(request []byte, routes map[string]func() Route,
+) (sequence.RunAller, <-chan string, error) {
 	rt, err := RouteFor(request, routes)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	return rt.Sequence(), nil
+	ra, ch := rt.Sequence()
+	return ra, ch, nil
 }
 
 type Route struct {
@@ -53,7 +55,7 @@ func RouteFor(request []byte, routes map[string]func() Route) (Route, error) {
 	return rt, nil
 }
 
-func (rt *Route) Sequence() sequence.RunAller {
+func (rt *Route) Sequence() (sequence.RunAller, <-chan string) {
 	return rt.NewSequence(rt.Params)
 }
 

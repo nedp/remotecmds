@@ -10,13 +10,13 @@ import (
 const shortDuration = time.Second
 
 func TestCommand(t *testing.T) {
-	command.New(NewSequence(Params{"This is the Integration test! Will it pass?"}),
-		make(chan string)).Run(make(chan string))
+	seq, ch := NewSequence(Params{"This is the Integration test! Will it pass?"})
+	command.New(seq, ch).Run(make(chan string))
 }
 
 func TestKill(t *testing.T) {
-	c := command.New(NewSequence(Params{"This should be cut off now; before it finishes."}),
-		make(chan string))
+	seq, ch := NewSequence(Params{"This should be cut off now; before it finishes."})
+	c := command.New(seq, ch)
 	go c.Run(make(chan string))
 	go func() {
 		time.Sleep(shortDuration)
