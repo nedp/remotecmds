@@ -20,6 +20,12 @@ type Interface interface {
 	router.Interface
 }
 
+// New creates and returns a new CommandRouter,
+// with a command pool of the specified size.
+//
+// The command pool size is a strict limit for the 
+// number of concurrent commands.
+// TODO make the command pool growable.
 func New(poolSize int) Interface {
 	cr := &CommandRouter{
 		router.New(),
@@ -32,6 +38,21 @@ func New(poolSize int) Interface {
 	return cr
 }
 
+// OutputFor routes a request, generating its sequence,
+// then creating and running a new command for it.
+//
+// If there is no free slot available for a new command
+// in the CommandRouter's command pool, the request is
+// rejected.
+//
+// The request is routed using the routes already registered
+// with the CommandRouter.
+// A new output channel is created, passed to the command,
+// and returned to the caller.
+//
+// Returns
+// (the output channel, nil) if the routing succeeds; and
+// (nil, an error) if the routing fails.
 func (cr *CommandRouter) OutputFor(request []byte) (<-chan string, error) {
 	// See if we have a free slot.
 	nCommands := <-cr.nCommands

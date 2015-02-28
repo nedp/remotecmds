@@ -6,8 +6,13 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-type commandMock struct {
-	outCh chan<- string
+type runAllerMock struct {
+	mock.Mock
 }
 
-func (ra *runAllerMock) RunAll
+type commandMock struct {
+	mock.Mock
+}
+
+func (c *commandMock) Run(outCh chan<- string) bool {
+}

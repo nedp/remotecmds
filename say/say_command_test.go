@@ -14,13 +14,13 @@ func TestCommand(t *testing.T) {
 	command.New(seq, ch).Run(make(chan string))
 }
 
-func TestKill(t *testing.T) {
-	seq, ch := NewSequence(Params{"This should be cut off now; before it finishes."})
-	c := command.New(seq, ch)
-	go c.Run(make(chan string))
-	go func() {
-		time.Sleep(shortDuration)
-		c.Kill()
-	}()
-	<-c.WhenTerminated()
-}
+// func TestStop(t *testing.T) {
+// 	seq, ch := NewSequence(Params{"This should be cut off now; before it finishes."})
+// 	c := command.New(seq, ch)
+// 	go c.Run(make(chan string))
+// 	go func() {
+// 		time.Sleep(shortDuration)
+// 		c.Stop()
+// 	}()
+// 	<-c.WhenStopped()
+// }
