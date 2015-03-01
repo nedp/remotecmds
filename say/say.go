@@ -32,7 +32,7 @@ func NewParams() router.Params {
 //
 // Returns
 // the created sequence.
-func NewSequence(routeParams router.Params) (s.RunAller, <-chan string) {
+func NewSequence(routeParams router.Params) s.RunAller {
 	p := params{
 		routeParams.(Params).Quote,
 		make(chan *exec.Cmd, 1),
@@ -72,7 +72,7 @@ func NewSequence(routeParams router.Params) (s.RunAller, <-chan string) {
 	outCh := make(chan string)
 	close(outCh)
 
-	return builder.End(), outCh
+	return builder.End(outCh)
 }
 
 func phrasesIn(quote string) []string {

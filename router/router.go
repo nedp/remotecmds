@@ -6,12 +6,10 @@ import (
 
 const defaultRoutesCapacity = 6
 
-type RunAllerMaker func(Params) (sequence.RunAller, <-chan string)
-
 type Interface interface {
 	RouteFor([]byte) (Route, error)
-	SequenceFor([]byte) (sequence.RunAller, <-chan string, error)
-	AddRoute(name string, newSequence RunAllerMaker, newParams func() Params)
+	SequenceFor([]byte) (sequence.RunAller, error)
+	AddRoute(name string, newSeq func(Params) sequence.RunAller, newPs func() Params)
 }
 
 type Router struct {
@@ -28,16 +26,18 @@ func (r Router) RouteFor(request []byte) (Route, error) {
 	return RouteFor(request, r.routes)
 }
 
-func (r Router) SequenceFor(request []byte) (sequence.RunAller, <-chan string, error) {
+func (r Router) SequenceFor(request []byte) (sequence.RunAller, error) {
 	return SequenceFor(request, r.routes)
 }
 
-func (r *Router) AddRoute(name string, newSequence RunAllerMaker, newParams func() Params) {
+func (r *Router) AddRoute(name string, newSeq func(Params) sequence.RunAller,
+		newPs func() Params,
+) {
 	r.routes[name] = func() Route {
 		return Route{
 			name,
-			newSequence,
-			newParams(), // Not called until after a route is retrieved from the map!
+			newSeq,
+			newPs(), // Not called until after a route is retrieved from the map!
 		}
 	}
 }

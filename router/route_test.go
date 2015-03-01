@@ -24,8 +24,8 @@ var testRoutes = map[string]func() Route {
 	"test": func() Route {
 		return Route{
 			"test",
-			func(_ Params) (sequence.RunAller, <-chan string) {
-				return testDummySequence, testCh
+			func(_ Params) sequence.RunAller {
+				return testDummySequence
 			},
 			new(ParamsTest),
 		}
@@ -39,6 +39,10 @@ func (d *dummySequence) RunAll(s status.Interface) status.Interface {
 
 func (d *dummySequence) IsRunning() bool {
 	return false
+}
+
+func (d *dummySequence) OutputChannel() <-chan string {
+	return nil
 }
 
 var testDummySequence = new(dummySequence)
@@ -76,11 +80,10 @@ func TestRouteForRequest(t *testing.T) {
 }
 
 func TestSequenceFor(t *testing.T) {
-	seq, ch, err := SequenceFor([]byte(testString), testRoutes)
+	seq, err := SequenceFor([]byte(testString), testRoutes)
 	if err != nil {
 		t.Fatal(err.Error())
 	}
 	assert.Equal(t, testDummySequence, seq, "SequenceFor didn't return the expected test dummy.")
-	assert.Equal(t, testCh, ch, "SequenceFor didn't return the expected channel.")
 }
 

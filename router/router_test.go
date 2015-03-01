@@ -19,10 +19,9 @@ func TestRouteForMethod(t *testing.T) {
 }
 
 func TestSequenceForMethod(t *testing.T) {
-	a, chA, errA := SequenceFor([]byte(testString), testRoutes)
-	b, chB, errB := testRouter.SequenceFor([]byte(testString))
+	a, errA := SequenceFor([]byte(testString), testRoutes)
+	b, errB := testRouter.SequenceFor([]byte(testString))
 
 	assert.Equal(t, a, b, "SequenceFor method didn't match SequenceFor function.")
 	assert.Equal(t, errA, errB, "SequenceFor method didn't match SequenceFor function.")
-	assert.Equal(t, chA, chB, "SequenceFor method didn't match SequenceFor function.")
 }
