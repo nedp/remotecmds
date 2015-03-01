@@ -66,7 +66,7 @@ func (cr *CommandRouter) OutputFor(req []byte) (<-chan string, error) {
 	outCh := make(chan string, 1)
 
 	// Run the new command
-	// TODO error handling
+	// TODO error handling other than printing logs and crashing.
 	go func(iSlot int, outCh chan<- string, name string) {
 		ok, err := s.Run(iSlot, outCh)
 		if err != nil {

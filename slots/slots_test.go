@@ -71,5 +71,12 @@ func TestFreeStillRunning(t *testing.T) {
 	cm.On("IsRunning").Return(true) // Want to free it immediately
 	s := New(1).(*slots)
 	s.commands[0] = cm
-	assert.NotNil(t, s.Free(0), "Freed a still running slot, but shouldn't be able to.")
+	assert.Equal(t, ErrStillRunning, s.Free(0),
+		"Freed a still running slot, didn't get expected error.")
+}
+
+func TestFreeAlreadyFree(t *testing.T) {
+	s := New(1).(*slots)
+	assert.Equal(t, ErrNotAssigned, s.Free(0),
+		"Freed an unassigned slot, didn't get expected error.")
 }

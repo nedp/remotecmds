@@ -29,7 +29,7 @@ type Interface interface {
 	// Returns
 	// nil if successful;
 	// ErrNotAssigned if slot i is not assigned; and
-	// ErrCommandRunning if the command in slot i is running.
+	// ErrStillRunning if the command in slot i is running.
 	Free(i int) error
 }
 
@@ -41,7 +41,7 @@ type slots struct {
 
 var (
 	ErrNotAssigned = errors.New("slots: tried to use the assignee of an unasigned slot")
-	ErrCommandRunning = errors.New("slots: tried to free a slot with a still-running command")
+	ErrStillRunning = errors.New("slots: tried to free a slot with a still-running command")
 )
 
 const growthRate = 2
@@ -97,7 +97,7 @@ func (s *slots) Run(i int, outCh chan<- string) (bool, error) {
 			return false, ErrNotAssigned
 		}
 		if s.commands[i].IsRunning() {
-			return false, ErrCommandRunning
+			return false, ErrStillRunning
 		}
 
 	return s.commands[i].Run(outCh), nil
@@ -112,7 +112,7 @@ func (s *slots) Free(i int) error {
 			return ErrNotAssigned
 		}
 		if s.commands[i].IsRunning() {
-			return ErrCommandRunning
+			return ErrStillRunning
 		}
 
 	s.commands[i] = nil
