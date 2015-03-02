@@ -75,7 +75,7 @@ func handle(cmdr cmdrouter.Interface, conn net.Conn) {
 	out, err := cmdr.OutputFor(req)
 	if err != nil {
 		log.Printf("error routing request: %s", err.Error())
-		fmt.Fprintf(conn, "%s\n", "ERROR: couldn't route the request.")
+		fmt.Fprintf(conn, "ERROR: couldn't route the request.\n")
 		conn.Close()
 		return
 	}
@@ -94,7 +94,8 @@ func respondAndClose(out <-chan string, conn net.Conn) {
 			continue
 		}
 		if n < len([]byte(s)) {
-			log.Printf("WARN: response incomplete - sent %d of %d bytes", n, len([]byte(s)))
+			log.Printf("WARN: response incomplete - sent %d of %d bytes",
+				n, len([]byte(s)))
 			continue
 		}
 	}

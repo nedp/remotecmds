@@ -75,15 +75,23 @@ func (cr *CommandRouter) OutputFor(req string) (<-chan string, error) {
 	go func(iSlot int, outCh chan<- string, name string) {
 		ok, err := s.Run(iSlot, outCh)
 		if err != nil {
-			log.Fatal("cmdrouter.(*CommandRouter).OutputFor: slot reported an error running a new command.")
+			log.Fatalf(
+				"cmdrouter.OutputFor: slot reported an error running a new command:\nt%s",
+				err.Error(),
+			)
 		}
 		if ok {
-			log.Printf("(%s) command completed successfully", name)
+			log.Printf("command (%s) in slot %d completed successfully", name, iSlot)
 		} else {
-			log.Printf("(%s) command failed", name)
+			log.Printf("command (%s) in slot %d failed", name, iSlot)
+		}
+		err = s.Free(iSlot)
+		if err != nil {
+			log.Printf("couldn't free slot %d: %s", iSlot, err.Error())
 		}
 	}(iSlot, outCh, rt.Name)
 
+	log.Printf("command (%s) started in slot: %d", rt.Name, iSlot)
 	outCh <- fmt.Sprintf("%s running in slot: %d", rt.Name, iSlot)
 	cr.slots <- s
 
