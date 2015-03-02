@@ -84,7 +84,6 @@ func phrasesIn(quote string) []string {
 		// add the rest of the quote as a single phrase
 		// and break from the loop early.
 		if i+1 == len(quote) {
-			phrases = append(phrases, quote[:])
 			break
 		}
 		// Add the next phrase.
@@ -92,7 +91,7 @@ func phrasesIn(quote string) []string {
 		quote = quote[i+1:]
 	}
 	// Add the part of the quote after the last punctuation mark.
-	return append(phrases, quote)
+	return append(phrases, quote[:])
 }
 
 type params struct {
