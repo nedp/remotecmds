@@ -11,7 +11,7 @@ type Interface interface {
 	//
 	// Returns
 	// the index of the slot assigned to the command.
-	Add(c command.Interface) int
+	Add(c command.Interface) (int, error)
 
 	// Run is a wrapper for Run on the command in slot i.
 	// i must be positive, slot i must be assigned to a command, and
@@ -37,33 +37,45 @@ type slots struct {
 	commands []command.Interface
 	nUsed int
 	iSlot int
+	maxNSlots int
 }
 
 var (
 	ErrNotAssigned = errors.New("slots: tried to use the assignee of an unasigned slot")
 	ErrStillRunning = errors.New("slots: tried to free a slot with a still-running command")
+	ErrNoFreeSlots = errors.New("slots: tried to assign a slot when none are free")
 )
 
 const growthRate = 2
 const sparsityFactor = 2
 
-func New(size int) Interface {
+func New(nSlots int, maxNSlots int) Interface {
 	// Preconditions
-		if size < 0 {
-			panic("slots.New: size out of range")
+		if nSlots < 0 {
+			panic("slots.New: nSlots out of range")
 		}
 
 	return &slots{
-		commands: make([]command.Interface, size),
+		commands: make([]command.Interface, nSlots),
 		nUsed: 0,
 		iSlot: 0,
+		maxNSlots: maxNSlots,
 	}
 }
 
-func (s *slots) Add(c command.Interface) int {
-	// Add new `nil` slots if we're full.
-	if s.nUsed * sparsityFactor >= len(s.commands) {
-		newSlots := make([]command.Interface, (growthRate - 1) * len(s.commands))
+func (s *slots) Add(c command.Interface) (int, error) {
+	if s.nUsed == s.maxNSlots {
+		return 0, ErrNoFreeSlots
+	}
+	// Add new `nil` slots if it's getting crowded, up to the maximum.
+	if (len(s.commands) < s.maxNSlots) && (s.nUsed*sparsityFactor >= len(s.commands)) {
+		targetNSlots := growthRate * len(s.commands)
+		if targetNSlots > s.maxNSlots {
+			targetNSlots = s.maxNSlots
+		}
+		nNewSlots := targetNSlots - len(s.commands)
+
+		newSlots := make([]command.Interface, nNewSlots)
 
 		s.iSlot = len(s.commands)
 		s.commands = append(s.commands, newSlots...)
@@ -85,7 +97,7 @@ func (s *slots) Add(c command.Interface) int {
 	// reducing the expected number of checks.
 	s.iSlot = i + sparsityFactor
 
-	return i
+	return i, nil
 }
 
 func (s *slots) Run(i int, outCh chan<- string) (bool, error) {

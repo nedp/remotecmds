@@ -11,7 +11,7 @@ import (
 
 const seperator = ":\n"
 
-func SequenceFor(req []byte, rts map[string]func() Route) (sequence.RunAller, error) {
+func SequenceFor(req string, rts map[string]func() Route) (sequence.RunAller, error) {
 	rt, err := RouteFor(req, rts)
 	if err != nil {
 		return nil, err
@@ -26,7 +26,7 @@ type Route struct {
 	Params Params
 }
 
-func RouteFor(request []byte, routes map[string]func() Route) (Route, error) {
+func RouteFor(request string, routes map[string]func() Route) (Route, error) {
 	// Strip leading whitespace
 	requestString := strings.TrimSpace(string(request))
 	// Parse the command name and TOML params table

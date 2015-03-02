@@ -7,8 +7,8 @@ import (
 const defaultRoutesCapacity = 6
 
 type Interface interface {
-	RouteFor([]byte) (Route, error)
-	SequenceFor([]byte) (sequence.RunAller, error)
+	RouteFor(string) (Route, error)
+	SequenceFor(string) (sequence.RunAller, error)
 	AddRoute(name string, newSeq func(Params) sequence.RunAller, newPs func() Params)
 }
 
@@ -22,11 +22,11 @@ func New() Interface {
 	return &Router{make(map[string]func() Route, defaultRoutesCapacity)}
 }
 
-func (r Router) RouteFor(request []byte) (Route, error) {
+func (r Router) RouteFor(request string) (Route, error) {
 	return RouteFor(request, r.routes)
 }
 
-func (r Router) SequenceFor(request []byte) (sequence.RunAller, error) {
+func (r Router) SequenceFor(request string) (sequence.RunAller, error) {
 	return SequenceFor(request, r.routes)
 }
 

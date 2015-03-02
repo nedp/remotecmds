@@ -34,7 +34,7 @@ func NewParams() router.Params {
 // the created sequence.
 func NewSequence(routeParams router.Params) s.RunAller {
 	p := params{
-		routeParams.(Params).Quote,
+		routeParams.(*Params).Quote,
 		make(chan *exec.Cmd, 1),
 		make(chan io.WriteCloser, 1),
 	}
@@ -91,7 +91,8 @@ func phrasesIn(quote string) []string {
 		phrases = append(phrases, quote[:i+1])
 		quote = quote[i+1:]
 	}
-	return phrases
+	// Add the part of the quote after the last punctuation mark.
+	return append(phrases, quote)
 }
 
 type params struct {

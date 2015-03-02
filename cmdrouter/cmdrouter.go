@@ -16,6 +16,7 @@ type CommandRouter struct {
 
 type Interface interface {
 	router.Interface
+	OutputFor(req string) (<-chan string, error)
 }
 
 // New creates and returns a new CommandRouter,
@@ -23,13 +24,14 @@ type Interface interface {
 //
 // nSlots is only used as an initial number of slots to
 // make allocation more efficient.
-// More slots will be allocated if needed.
-func New(nSlots int) Interface {
+// More slots will be allocated if needed, to a maximum of
+// maxNSlots.
+func New(nSlots int, maxNSlots int) Interface {
 	cr := &CommandRouter{
 		router.New(),
 		make(chan slots.Interface, 1),
 	}
-	cr.slots <- slots.New(nSlots)
+	cr.slots <- slots.New(nSlots, maxNSlots)
 	return cr
 }
 
@@ -47,7 +49,7 @@ func New(nSlots int) Interface {
 // Returns
 // (the output channel, nil) if the routing succeeds; and
 // (nil, an error) if the routing fails.
-func (cr *CommandRouter) OutputFor(req []byte) (<-chan string, error) {
+func (cr *CommandRouter) OutputFor(req string) (<-chan string, error) {
 	// Resolve the route
 	rt, err := cr.RouteFor(req)
 	if err != nil {
@@ -62,7 +64,10 @@ func (cr *CommandRouter) OutputFor(req []byte) (<-chan string, error) {
 	s := <-cr.slots
 
 	cmd := command.New(seq)
-	iSlot := s.Add(cmd)
+	iSlot, err := s.Add(cmd)
+	if err != nil {
+		return nil, fmt.Errorf("couldn't add a new command: %s", err.Error())
+	}
 	outCh := make(chan string, 1)
 
 	// Run the new command
