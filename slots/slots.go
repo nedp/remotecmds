@@ -96,6 +96,9 @@ func (s *slots) Add(c command.Interface) (int, error) {
 	// Skip the next slot in a future search to maintain sparsity,
 	// reducing the expected number of checks.
 	s.iSlot = i + sparsityFactor
+	for s.iSlot >= len(s.commands) {
+		s.iSlot -= len(s.commands)
+	}
 
 	return i, nil
 }
