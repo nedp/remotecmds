@@ -68,7 +68,7 @@ func TestParams(t *testing.T) {
 }
 
 func TestRouteForRequest(t *testing.T) {
-	rt, err := RouteFor([]byte(testString), testRoutes)
+	rt, err := RouteFor(testString, testRoutes)
 	if err != nil {
 		t.Fatal(err.Error())
 	}
@@ -80,7 +80,7 @@ func TestRouteForRequest(t *testing.T) {
 }
 
 func TestSequenceFor(t *testing.T) {
-	seq, err := SequenceFor([]byte(testString), testRoutes)
+	seq, err := SequenceFor(testString, testRoutes)
 	if err != nil {
 		t.Fatal(err.Error())
 	}

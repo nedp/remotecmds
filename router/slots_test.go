@@ -1,4 +1,4 @@
-package slots
+package router
 
 import (
 	"testing"
@@ -42,7 +42,7 @@ func (c *commandMock) IsRunning() bool {
 
 func TestNewSlots(t *testing.T) {
 	for i := 0; i < longMax; i += 1 {
-		s := New(i, i).(*slots)
+		s := NewSlots(i, i).(*slots)
 		assert.Equal(t, i, len(s.commands), "newSlots produced the wrong number of slots")
 		assert.Equal(t, 0, s.nUsed, "newSlots produced non-empty slots")
 		assert.Equal(t, 0, s.iSlot, "newSlots produced non-zeroed iSlot object")
@@ -51,7 +51,7 @@ func TestNewSlots(t *testing.T) {
 
 func TestFree(t *testing.T) {
 	for iCm := 0; iCm < shortMax; iCm += 1 {
-		s := New(shortMax, shortMax).(*slots)
+		s := NewSlots(shortMax, shortMax).(*slots)
 		cm := new(commandMock)
 		cm.On("IsRunning").Return(false) // Want to free it immediately
 
@@ -69,27 +69,29 @@ func TestFree(t *testing.T) {
 func TestFreeStillRunning(t *testing.T) {
 	cm := new(commandMock)
 	cm.On("IsRunning").Return(true) // Want to free it immediately
-	s := New(1, 1).(*slots)
+	s := NewSlots(1, 1).(*slots)
 	s.commands[0] = cm
 	assert.Equal(t, ErrStillRunning, s.Free(0),
 		"Freed a still running slot, didn't get expected error.")
 }
 
 func TestFreeAlreadyFree(t *testing.T) {
-	s := New(1, 1).(*slots)
+	s := NewSlots(1, 1).(*slots)
 	assert.Equal(t, ErrNotAssigned, s.Free(0),
 		"Freed an unassigned slot, didn't get expected error.")
 }
 
 func TestUseIncrease(t *testing.T) {
 	cm := new(commandMock)
-	s := New(0, 1).(*slots)
-	assert.Nil(t, s.Add(cm), "Error extending number of slots")
+	s := NewSlots(0, 1).(*slots)
+	_, err := s.Add(cm)
+	assert.Nil(t, err, "Error extending number of slots")
 }
 
 func TestUseFull(t *testing.T) {
 	cm := new(commandMock)
-	s := New(0, 0).(*slots)
-	assert.Equal(t, ErrNoFreeSlots, s.Add(cm),
+	s := NewSlots(0, 0).(*slots)
+	_, err := s.Add(cm)
+	assert.Equal(t, ErrNoFreeSlots, err,
 		"Didn't get expected error adding to full slots.")
 }

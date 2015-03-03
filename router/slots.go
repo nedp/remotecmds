@@ -1,4 +1,4 @@
-package slots
+package router
 
 import (
 	"errors"
@@ -6,7 +6,7 @@ import (
 	"bitbucket.org/nedp/command"
 )
 
-type Interface interface {
+type Slots interface {
 	// Add finds a free slot and assigns it to the specified command.
 	//
 	// Returns
@@ -49,10 +49,10 @@ var (
 const growthRate = 2
 const sparsityFactor = 2
 
-func New(nSlots int, maxNSlots int) Interface {
+func NewSlots(nSlots int, maxNSlots int) Slots {
 	// Preconditions
 		if nSlots < 0 {
-			panic("slots.New: nSlots out of range")
+			panic("router.NewSlots: nSlots out of range")
 		}
 
 	return &slots{
@@ -70,6 +70,9 @@ func (s *slots) Add(c command.Interface) (int, error) {
 	// Add new `nil` slots if it's getting crowded, up to the maximum.
 	if (len(s.commands) < s.maxNSlots) && (s.nUsed*sparsityFactor >= len(s.commands)) {
 		targetNSlots := growthRate * len(s.commands)
+		if targetNSlots == len(s.commands) {
+			targetNSlots += 1
+		}
 		if targetNSlots > s.maxNSlots {
 			targetNSlots = s.maxNSlots
 		}
@@ -106,7 +109,7 @@ func (s *slots) Add(c command.Interface) (int, error) {
 func (s *slots) Run(i int, outCh chan<- string) (bool, error) {
 	// Preconditions
 		if i < 0 {
-			panic("slots.Interface.(*slots).Free: i out of range")
+			panic("Router.*slots.Run: i out of range")
 		}
 		if s.commands[i] == nil {
 			return false, ErrNotAssigned
@@ -121,7 +124,7 @@ func (s *slots) Run(i int, outCh chan<- string) (bool, error) {
 func (s *slots) Free(i int) error {
 	// Preconditions
 		if i < 0 {
-			panic("slots.Interface.(*slots).Free: i out of range")
+			panic("Router.*slots.Free: i out of range")
 		}
 		if s.commands[i] == nil {
 			return ErrNotAssigned

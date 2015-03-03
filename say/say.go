@@ -34,7 +34,7 @@ func NewParams() router.Params {
 // the created sequence.
 func NewSequence(routeParams router.Params) s.RunAller {
 	p := params{
-		routeParams.(*Params).Quote,
+		routeParams.(Params).Quote,
 		make(chan *exec.Cmd, 1),
 		make(chan io.WriteCloser, 1),
 	}
@@ -42,27 +42,20 @@ func NewSequence(routeParams router.Params) s.RunAller {
 	phrases := phrasesIn(p.quote)
 
 	builder := s.SequenceOf(
-		s.Mainly(
-			// Prepare the first espeak instance and pipe.
-			prepareEspeak(p),
-		).AlsoJust(
+		// Prepare the first espeak instance and pipe.
+		s.PhaseOf(prepareEspeak(p)).
 			// Send through the first pipe.
-			sendPhrase(p, phrases[0]),
-		),
+			AndJust(sendPhrase(p, phrases[0])),
 	)
 
 	for i := 0; i+1 < len(phrases); i += 1 {
 		builder = builder.Then(
-			s.Mainly(
-				// Run the current espeak instance
-				runEspeak(p),
-			).AlsoJust(
+			// Run the current espeak instance.
+			s.PhaseOf(runEspeak(p)).
 				// Prepare the next espeak instance and pipe.
-				prepareEspeak(p),
-			).AlsoJust(
+				AndJust(prepareEspeak(p)).
 				// Send through the next pipe.
-				sendPhrase(p, phrases[i+1]),
-			),
+				AndJust(sendPhrase(p, phrases[i+1])),
 		)
 	}
 

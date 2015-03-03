@@ -24,10 +24,12 @@ func TestSay(t *testing.T) {
 // For each route, run this test helper, then check each of rt.Params' fields.
 func testHelper(t *testing.T, name string, str string, newSeq func(router.Params) sequence.RunAller,
 ) router.Route {
-	r := router.New()
+	const testNSlots = 8
+	const testMaxSlots = 16
+	r := router.New(testNSlots, testMaxSlots)
 	AddRoutesTo(r)
 
-	rt, err := r.RouteFor([]byte(str))
+	rt, err := r.RouteFor(str)
 
 	if err != nil {
 		t.Fatal(err.Error())

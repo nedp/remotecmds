@@ -6,11 +6,16 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var testRouter = &Router{testRoutes}
+const (
+	testNSlots = 8
+	testMaxSlots = 16
+)
 
 func TestRouteForMethod(t *testing.T) {
-	a, errA := RouteFor([]byte(testString), testRoutes)
-	b, errB := testRouter.RouteFor([]byte(testString))
+	r := &Router{testRoutes, make(chan Slots, 1)}
+	r.slots <- NewSlots(testNSlots, testMaxSlots)
+	a, errA := RouteFor(testString, testRoutes)
+	b, errB := r.RouteFor(testString)
 
 	assert.Equal(t, a.Name, b.Name, "RouteFor method didn't match RouteFor function.")
 	assert.Equal(t, a.NewSequence, b.NewSequence, "RouteFor method didn't match RouteFor function.")
@@ -19,8 +24,11 @@ func TestRouteForMethod(t *testing.T) {
 }
 
 func TestSequenceForMethod(t *testing.T) {
-	a, errA := SequenceFor([]byte(testString), testRoutes)
-	b, errB := testRouter.SequenceFor([]byte(testString))
+	r := &Router{testRoutes, make(chan Slots, 1)}
+	r.slots <- NewSlots(testNSlots, testMaxSlots)
+
+	a, errA := SequenceFor(testString, testRoutes)
+	b, errB := r.SequenceFor(testString)
 
 	assert.Equal(t, a, b, "SequenceFor method didn't match SequenceFor function.")
 	assert.Equal(t, errA, errB, "SequenceFor method didn't match SequenceFor function.")

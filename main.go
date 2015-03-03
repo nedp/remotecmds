@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"strings"
 
-	"bitbucket.org/nedp/remotecmds/cmdrouter"
+	"bitbucket.org/nedp/remotecmds/router"
 	"bitbucket.org/nedp/remotecmds/routes"
 )
 
@@ -39,7 +39,7 @@ func main() {
 	}
 
 	// Make a CommandRouter and specify the routes.
-	cmdr := cmdrouter.New(defaultNCommandSlots, maxNCommandSlots)
+	cmdr := router.New(defaultNCommandSlots, maxNCommandSlots)
 	routes.AddRoutesTo(cmdr)
 
 	// Accept all connections.
@@ -55,7 +55,7 @@ func main() {
 
 // handle reads, routes, and responds to the request,
 // then closes the connection.
-func handle(cmdr cmdrouter.Interface, conn net.Conn) {
+func handle(cmdr router.Interface, conn net.Conn) {
 	const bufferSize = 1024
 	var lines []string
 

@@ -1,3 +1,0 @@
-package cmdrouter
-
-// TODO test
