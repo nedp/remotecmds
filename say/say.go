@@ -34,7 +34,7 @@ func NewParams() router.Params {
 // the created sequence.
 func NewSequence(routeParams router.Params) s.RunAller {
 	p := params{
-		routeParams.(Params).Quote,
+		routeParams.(*Params).Quote,
 		make(chan *exec.Cmd, 1),
 		make(chan io.WriteCloser, 1),
 	}

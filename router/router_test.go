@@ -12,8 +12,8 @@ const (
 )
 
 func TestRouteForMethod(t *testing.T) {
-	r := &Router{testRoutes, make(chan Slots, 1)}
-	r.slots <- NewSlots(testNSlots, testMaxSlots)
+	r := &Router{testRoutes, make(chan *slots, 1)}
+	r.slots <- newSlots(testNSlots, testMaxSlots)
 	a, errA := RouteFor(testString, testRoutes)
 	b, errB := r.RouteFor(testString)
 
@@ -24,8 +24,8 @@ func TestRouteForMethod(t *testing.T) {
 }
 
 func TestSequenceForMethod(t *testing.T) {
-	r := &Router{testRoutes, make(chan Slots, 1)}
-	r.slots <- NewSlots(testNSlots, testMaxSlots)
+	r := &Router{testRoutes, make(chan *slots, 1)}
+	r.slots <- newSlots(testNSlots, testMaxSlots)
 
 	a, errA := SequenceFor(testString, testRoutes)
 	b, errB := r.SequenceFor(testString)

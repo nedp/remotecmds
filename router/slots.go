@@ -50,6 +50,10 @@ const growthRate = 2
 const sparsityFactor = 2
 
 func NewSlots(nSlots int, maxNSlots int) Slots {
+	return newSlots(nSlots, maxNSlots)
+}
+
+func newSlots(nSlots int, maxNSlots int) *slots {
 	// Preconditions
 		if nSlots < 0 {
 			panic("router.NewSlots: nSlots out of range")

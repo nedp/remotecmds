@@ -12,7 +12,7 @@ const defaultRoutesCapacity = 6
 
 type Router struct {
 	routes map[string]func() Route
-	slots chan Slots
+	slots chan *slots
 }
 
 type Interface interface {
@@ -52,9 +52,9 @@ func (r *Router) AddRoute(name string, newSeq func(Params) sequence.RunAller,
 func New(nSlots int, maxNSlots int) Interface {
 	cr := &Router{
 		make(map[string]func() Route, defaultRoutesCapacity),
-		make(chan Slots, 1),
+		make(chan *slots, 1),
 	}
-	cr.slots <- NewSlots(nSlots, maxNSlots)
+	cr.slots <- newSlots(nSlots, maxNSlots)
 	return cr
 }
 
@@ -85,6 +85,7 @@ func (cr *Router) OutputFor(req string) (<-chan string, error) {
 		return nil, fmt.Errorf("couldn't route the request: %s", err.Error())
 	}
 	s := <-cr.slots
+	defer func() { cr.slots <- s }()
 
 	cmd := command.New(seq)
 	iSlot, err := s.Add(cmd)
@@ -95,8 +96,13 @@ func (cr *Router) OutputFor(req string) (<-chan string, error) {
 
 	// Run the new command
 	// TODO error handling other than printing logs and crashing.
-	go func(iSlot int, outCh chan<- string, name string) {
-		ok, err := s.Run(iSlot, outCh)
+
+	log.Printf("running command (%s) in slot %d", rt.Name, iSlot)
+	outCh <- fmt.Sprintf("%s running in slot %d", rt.Name, iSlot)
+
+	go func(sCh chan *slots, cmd command.Interface, iSlot int, outCh chan<- string, name string) {
+		ok := cmd.Run(outCh)
+
 		if err != nil {
 			log.Fatalf(
 				"cmdrouter.OutputFor: slot reported an error running a new command:\nt%s",
@@ -108,15 +114,13 @@ func (cr *Router) OutputFor(req string) (<-chan string, error) {
 		} else {
 			log.Printf("command (%s) in slot %d failed", name, iSlot)
 		}
+		s := <-sCh
 		err = s.Free(iSlot)
+		sCh <- s
 		if err != nil {
 			log.Printf("couldn't free slot %d: %s", iSlot, err.Error())
 		}
-	}(iSlot, outCh, rt.Name)
-
-	log.Printf("command (%s) started in slot: %d", rt.Name, iSlot)
-	outCh <- fmt.Sprintf("%s running in slot: %d", rt.Name, iSlot)
-	cr.slots <- s
+	}(cr.slots, s.commands[iSlot], iSlot, outCh, rt.Name)
 
 	return outCh, nil
 }

@@ -14,8 +14,8 @@ import (
 )
 
 const defaultPort = 7832
-const defaultNCommandSlots = 16
-const maxNCommandSlots = 32
+const defaultNSlots = 16
+const defaultMaxSlots = 32
 
 func main() {
 	println("Hello, world!")
@@ -25,6 +25,18 @@ func main() {
 	port, err := strconv.Atoi(portStr)
 	if err != nil {
 		port = defaultPort
+	}
+
+	// Get slot details
+	nSlotsStr := os.Getenv("NSLOTS")
+	nSlots, err := strconv.Atoi(nSlotsStr)
+	if err != nil {
+		nSlots = defaultNSlots
+	}
+	maxSlotsStr := os.Getenv("MAXSLOTS")
+	maxSlots, err := strconv.Atoi(maxSlotsStr)
+	if err != nil {
+		maxSlots = defaultMaxSlots
 	}
 
 	// Listen on the specified port.
@@ -39,7 +51,7 @@ func main() {
 	}
 
 	// Make a CommandRouter and specify the routes.
-	cmdr := router.New(defaultNCommandSlots, maxNCommandSlots)
+	cmdr := router.New(nSlots, maxSlots)
 	routes.AddRoutesTo(cmdr)
 
 	// Accept all connections.
@@ -75,8 +87,8 @@ func handle(cmdr router.Interface, conn net.Conn) {
 	out, err := cmdr.OutputFor(req)
 	if err != nil {
 		log.Printf("error routing request: %s", err.Error())
-		fmt.Fprintf(conn, "ERROR: couldn't route the request.\n")
 		conn.Close()
+		fmt.Fprintf(conn, "ERROR: couldn't route the request.\n")
 		return
 	}
 
