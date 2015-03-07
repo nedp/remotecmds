@@ -9,7 +9,7 @@ import (
 	"bitbucket.org/nedp/command/sequence"
 )
 
-const seperator = ":\n"
+const seperator = ":"
 
 func SequenceFor(req string, rts map[string]func() Route) (sequence.RunAller, error) {
 	rt, err := RouteFor(req, rts)
@@ -28,27 +28,32 @@ type Route struct {
 
 func RouteFor(request string, routes map[string]func() Route) (Route, error) {
 	// Strip leading whitespace
-	requestString := strings.TrimSpace(string(request))
+	trimmedRequest := strings.TrimSpace(string(request))
 	// Parse the command name and TOML params table
 	var args string
 	var routeName string
-	split := strings.SplitN(requestString, seperator, 2)
+	split := strings.SplitN(trimmedRequest, seperator, 2)
 	if len(split) != 2 {
-		err := fmt.Errorf("couldn't parse request \"%s\"", string(request))
-		return Route{}, err
+		return Route{}, fmt.Errorf("couldn't parse request:\n\"%s\"", request)
 	}
-	routeName = split[0]
+
 	args = split[1]
 
-	// Unmarshal the TOML
+	routeName = split[0]
+
+	// Find the route's sequence constructor.
 	rtFn, ok := routes[routeName]
 	if !ok {
 		return Route{}, fmt.Errorf("route name \"%s\" not recognised", routeName)
 	}
 	rt := rtFn()
 
-	if _, err := toml.Decode(args, rt.Params); err != nil {
-		return Route{}, fmt.Errorf("couldn't unmarshall arguments (%s)", err.Error())
+	// Unmarshall the toml arguments, if they were given.
+	if args != "" {
+		_, err := toml.Decode(args, rt.Params)
+		if err != nil {
+			return Route{}, fmt.Errorf("couldn't unmarshall arguments (%s)", err.Error())
+		}
 	}
 
 	return rt, nil

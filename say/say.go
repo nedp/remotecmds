@@ -22,7 +22,9 @@ import (
 type Params struct {
 	Quote string
 }
+
 func (Params) IsParams() {} // Marker
+
 func NewParams() router.Params {
 	return new(Params)
 }
@@ -38,6 +40,7 @@ func NewSequence(routeParams router.Params) s.RunAller {
 		make(chan *exec.Cmd, 1),
 		make(chan io.WriteCloser, 1),
 	}
+	println("quote:", p.quote)
 
 	phrases := phrasesIn(p.quote)
 
