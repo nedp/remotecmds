@@ -87,8 +87,8 @@ func handle(cmdr router.Interface, conn net.Conn) {
 	out, err := cmdr.OutputFor(req)
 	if err != nil {
 		log.Printf("error routing request: %s", err.Error())
-		conn.Close()
 		fmt.Fprintf(conn, "ERROR: couldn't route the request.\n")
+		conn.Close()
 		return
 	}
 
