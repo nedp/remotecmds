@@ -50,12 +50,13 @@ func (r *Router) AddRoute(name string, newSeq func(Params) sequence.RunAller,
 // More slots will be allocated if needed, to a maximum of
 // maxNSlots.
 func New(nSlots int, maxNSlots int) Interface {
-	cr := &Router{
+	r := &Router{
 		make(map[string]func() Route, defaultRoutesCapacity),
 		make(chan *slots, 1),
 	}
-	cr.slots <- newSlots(nSlots, maxNSlots)
-	return cr
+	r.slots <- newSlots(nSlots, maxNSlots)
+	r.AddRoute("status", NewSequenceStatus, NewParamsStatus(r))
+	return r
 }
 
 // OutputFor routes a request, generating its sequence,
@@ -87,7 +88,7 @@ func (cr *Router) OutputFor(req string) (<-chan string, error) {
 	s := <-cr.slots
 	defer func() { cr.slots <- s }()
 
-	cmd := command.New(seq)
+	cmd := command.New(seq, rt.Name)
 	iSlot, err := s.Add(cmd)
 	if err != nil {
 		return nil, fmt.Errorf("couldn't add a new command: %s", err.Error())
@@ -98,7 +99,7 @@ func (cr *Router) OutputFor(req string) (<-chan string, error) {
 	// TODO error handling other than printing logs and crashing.
 
 	log.Printf("running command (%s) in slot %d", rt.Name, iSlot)
-	outCh <- fmt.Sprintf("%s running in slot %d", rt.Name, iSlot)
+	outCh <- fmt.Sprintf("%s running in slot %d with the following output:\n", rt.Name, iSlot)
 
 	go func(sCh chan *slots, cmd command.Interface, iSlot int, outCh chan<- string, name string) {
 		ok := cmd.Run(outCh)

@@ -31,10 +31,19 @@ type Slots interface {
 	// ErrNotAssigned if slot i is not assigned; and
 	// ErrStillRunning if the command in slot i is running.
 	Free(i int) error
+
+	// Command returns the command most recently assigned to slot i.
+	// i must be positive.
+	// 
+	// Returns
+	// (the command, nil) if successfuly; and
+	// (nil, ErrNotAssigned) if slot i has never been assigned.
+	Command(i int) (command.Interface, error)
 }
 
 type slots struct {
 	commands []command.Interface
+	pubCommands []command.Interface
 	nUsed int
 	iSlot int
 	maxNSlots int
@@ -61,6 +70,7 @@ func newSlots(nSlots int, maxNSlots int) *slots {
 
 	return &slots{
 		commands: make([]command.Interface, nSlots),
+		pubCommands: make([]command.Interface, nSlots),
 		nUsed: 0,
 		iSlot: 0,
 		maxNSlots: maxNSlots,
@@ -83,9 +93,11 @@ func (s *slots) Add(c command.Interface) (int, error) {
 		nNewSlots := targetNSlots - len(s.commands)
 
 		newSlots := make([]command.Interface, nNewSlots)
-
 		s.iSlot = len(s.commands)
 		s.commands = append(s.commands, newSlots...)
+
+		newSlots = make([]command.Interface, nNewSlots)
+		s.pubCommands = append(s.pubCommands, newSlots...)
 	}
 
 	// Find a free slot
@@ -98,6 +110,7 @@ func (s *slots) Add(c command.Interface) (int, error) {
 	}
 	// Add the command
 	s.commands[i] = c
+	s.pubCommands[i] = c
 	s.nUsed += 1
 
 	// Skip the next slot in a future search to maintain sparsity,
@@ -140,4 +153,15 @@ func (s *slots) Free(i int) error {
 	s.commands[i] = nil
 	s.nUsed -= 1
 	return nil
+}
+
+func (s *slots) Command(i int) (command.Interface, error) {
+	// Preconditions
+		if i < 0 {
+			panic("Router.slots.Command: i out of range")
+		}
+		if s.pubCommands[i] == nil {
+			return nil, ErrNotAssigned
+		}
+	return s.pubCommands[i], nil
 }

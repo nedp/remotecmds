@@ -40,8 +40,6 @@ func NewSequence(routeParams router.Params) s.RunAller {
 		make(chan *exec.Cmd, 1),
 		make(chan io.WriteCloser, 1),
 	}
-	println("quote:", p.quote)
-
 	phrases := phrasesIn(p.quote)
 
 	builder := s.SequenceOf(
