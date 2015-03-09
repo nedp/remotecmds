@@ -2,6 +2,7 @@ package router
 
 import (
 	"fmt"
+	"log"
 
 	s "bitbucket.org/nedp/command/sequence"
 )
@@ -14,7 +15,7 @@ type StatusParams struct {
 func (StatusParams) IsParams() {} // Marker
 
 // Need to use a closure to capture the router.
-func NewParamsStatus(r *Router) func() Params {
+func NewStatusParams(r *Router) func() Params {
 	return func() Params {
 		p := new(StatusParams)
 		p.Router = r
@@ -22,7 +23,7 @@ func NewParamsStatus(r *Router) func() Params {
 	}
 }
 
-func NewSequenceStatus(routeParams Params) s.RunAller {
+func NewStatusSequence(routeParams Params) s.RunAller {
 	id := routeParams.(*StatusParams).ID
 	r := routeParams.(*StatusParams).Router
 	outCh := make(chan string)
@@ -34,13 +35,13 @@ func NewSequenceStatus(routeParams Params) s.RunAller {
 	r.slots <- sl
 	if err != nil {
 		msg := fmt.Sprintf("ERROR: Couldn't find the command: %s", err.Error())
-		return s.FirstJust(fail(outCh, msg)).End(outCh)
+		return s.FirstJust(sendFailure(outCh, msg)).End(outCh)
 	}
 	state := cmd.State()
 	name := cmd.Name()
 
 	// Send the command name
-	builder := s.FirstJust(sendName(outCh, id, name))
+	builder := s.FirstJust(sendCommandName(outCh, id, name))
 
 	// If the command is running, report it.
 	if state.IsRunning {
@@ -61,41 +62,12 @@ func NewSequenceStatus(routeParams Params) s.RunAller {
 
 	// Send each line in the command's prior output
 	for i, line := range state.Output {
-		builder = builder.ThenJust(sendOut(outCh, i, line))
+		builder = builder.ThenJust(sendOutputLine(outCh, i, line))
 	}
 
 	// Close the channel
 	builder = builder.ThenJust(closeCh(outCh))
 
+	log.Printf("reporting status of command (%s) in slot %d", name, id)
 	return builder.End(outCh)
-}
-
-func sendString(outCh chan<- string, str string) func() error {
-	return func() error {
-		outCh <- str
-		return nil
-	}
-}
-
-func sendName(outCh chan<- string, id int, name string) func() error {
-	return sendString(outCh, fmt.Sprintf("Command (%s) in slot %d:", name, id))
-}
-
-func sendOut(outCh chan<- string, iLine int, line string) func() error {
-	return sendString(outCh, fmt.Sprintf("Output line %4d: %s", iLine, line))
-}
-
-func fail(outCh chan<- string, msg string) func() error {
-	return func() error {
-		outCh <- msg
-		close(outCh)
-		return fmt.Errorf("status command failed: %s", msg)
-	}
-}
-
-func closeCh(ch chan<- string) func() error {
-	return func() error {
-		close(ch)
-		return nil
-	}
 }

@@ -55,7 +55,9 @@ func New(nSlots int, maxNSlots int) Interface {
 		make(chan *slots, 1),
 	}
 	r.slots <- newSlots(nSlots, maxNSlots)
-	r.AddRoute("status", NewSequenceStatus, NewParamsStatus(r))
+	r.AddRoute("status", NewStatusSequence, NewStatusParams(r))
+	r.AddRoute("pause", NewPauseSequence, NewPauseParams(r))
+	r.AddRoute("cont", NewContSequence, NewContParams(r))
 	return r
 }
 
