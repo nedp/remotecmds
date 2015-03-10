@@ -34,14 +34,14 @@ func NewStatusSequence(routeParams Params) s.RunAller {
 	cmd, err := sl.Command(id)
 	r.slots <- sl
 	if err != nil {
-		msg := fmt.Sprintf("ERROR: Couldn't find the command: %s", err.Error())
+		msg := fmt.Sprintf("Couldn't find the command in slot %d: %s", id, err.Error())
 		return s.FirstJust(sendFailure(outCh, msg)).End(outCh)
 	}
 	state := cmd.State()
 	name := cmd.Name()
 
 	// Send the command name
-	builder := s.FirstJust(sendCommandName(outCh, id, name))
+	builder := s.FirstJust(sendIntro(outCh, "Status of", id, name))
 
 	// If the command is running, report it.
 	if state.IsRunning {
@@ -68,6 +68,6 @@ func NewStatusSequence(routeParams Params) s.RunAller {
 	// Close the channel
 	builder = builder.ThenJust(closeCh(outCh))
 
-	log.Printf("reporting status of command (%s) in slot %d", name, id)
+	log.Printf("reporting status of command `%s` in slot %d", name, id)
 	return builder.End(outCh)
 }

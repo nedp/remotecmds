@@ -6,25 +6,25 @@ import (
 	s "bitbucket.org/nedp/command/sequence"
 )
 
-type PauseParams struct {
+type StopParams struct {
 	ID int
 	Router *Router
 }
 
-func (PauseParams) IsParams() {} // Marker
+func (StopParams) IsParams() {} // Marker
 
 // Need to use a closure to capture the router.
-func NewPauseParams(r *Router) func() Params {
+func NewStopParams(r *Router) func() Params {
 	return func() Params {
-		p := new(PauseParams)
+		p := new(StopParams)
 		p.Router = r
 		return p
 	}
 }
 
-func NewPauseSequence(routeParams Params) s.RunAller {
-	id := routeParams.(*PauseParams).ID
-	r := routeParams.(*PauseParams).Router
+func NewStopSequence(routeParams Params) s.RunAller {
+	id := routeParams.(*StopParams).ID
+	r := routeParams.(*StopParams).Router
 	outCh := make(chan string)
 
 	// Get the command, reporting failure if it's not there.
@@ -38,27 +38,23 @@ func NewPauseSequence(routeParams Params) s.RunAller {
 
 	// Send the command's name and slot.
 	name := cmd.Name()
-	builder := s.FirstJust(sendIntro(outCh, "Pausing", id, name))
+	builder := s.FirstJust(sendIntro(outCh, "Stopping", id, name))
 
-	// Pause the command.
+	// Stop the command.
 	// If a failure occurs, report it, close the channel, and end the sequence.
-	wasPaused, err := cmd.Pause()
+	err = cmd.Stop()
 	if err != nil {
 		builder = builder.ThenJust(sendFailure(outCh, err.Error()))
-		log.Printf("failed to pause command `%s` in slot %d", name, id)
+		log.Printf("failed to stop command `%s` in slot %d:\n\t%s", name, id, err.Error())
 		return builder.End(outCh)
 	}
 
-	// Report whether the command was already paused, or if we paused it.
-	if wasPaused {
-		builder = builder.ThenJust(sendString(outCh, "Command was already paused"))
-	} else {
-		builder = builder.ThenJust(sendString(outCh, "Command is now paused"))
-	}
+	// Report success
+	builder = builder.ThenJust(sendString(outCh, "Command is now stopped"))
 
 	// Close the channel
 	builder = builder.ThenJust(closeCh(outCh))
 
-	log.Printf("pausing command `%s` in slot %d", name, id)
+	log.Printf("stopping command `%s` in slot %d", name, id)
 	return builder.End(outCh)
 }

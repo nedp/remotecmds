@@ -1,6 +1,7 @@
 package router
 
 import (
+	"errors"
 	"fmt"
 )
 
@@ -11,8 +12,8 @@ func sendString(outCh chan<- string, str string) func() error {
 	}
 }
 
-func sendCommandName(outCh chan<- string, id int, name string) func() error {
-	return sendString(outCh, fmt.Sprintf("Command (%s) in slot %d:", name, id))
+func sendIntro(outCh chan<- string, prefix string, id int, name string) func() error {
+	return sendString(outCh, fmt.Sprintf("%s command `%s` in slot %d:", prefix, name, id))
 }
 
 func sendOutputLine(outCh chan<- string, iLine int, line string) func() error {
@@ -21,9 +22,10 @@ func sendOutputLine(outCh chan<- string, iLine int, line string) func() error {
 
 func sendFailure(outCh chan<- string, msg string) func() error {
 	return func() error {
-		outCh <- msg
+		newMsg := fmt.Sprintf("Error: %s", msg)
+		outCh <- newMsg
 		close(outCh)
-		return fmt.Errorf("status command failed: %s", msg)
+		return errors.New(newMsg)
 	}
 }
 

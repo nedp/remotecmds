@@ -50,9 +50,9 @@ type slots struct {
 }
 
 var (
-	ErrNotAssigned = errors.New("slots: tried to use the assignee of an unasigned slot")
-	ErrStillRunning = errors.New("slots: tried to free a slot with a still-running command")
-	ErrNoFreeSlots = errors.New("slots: tried to assign a slot when none are free")
+	ErrNotAssigned = errors.New("the slot is unassigned")
+	ErrStillRunning = errors.New("the command is still running")
+	ErrNoFreeSlots = errors.New("there are no free slots")
 )
 
 const growthRate = 2

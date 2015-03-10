@@ -58,6 +58,7 @@ func New(nSlots int, maxNSlots int) Interface {
 	r.AddRoute("status", NewStatusSequence, NewStatusParams(r))
 	r.AddRoute("pause", NewPauseSequence, NewPauseParams(r))
 	r.AddRoute("cont", NewContSequence, NewContParams(r))
+	r.AddRoute("stop", NewStopSequence, NewStopParams(r))
 	return r
 }
 
@@ -100,8 +101,8 @@ func (cr *Router) OutputFor(req string) (<-chan string, error) {
 	// Run the new command
 	// TODO error handling other than printing logs and crashing.
 
-	log.Printf("running command (%s) in slot %d", rt.Name, iSlot)
-	outCh <- fmt.Sprintf("%s running in slot %d with the following output:\n", rt.Name, iSlot)
+	log.Printf("running command `%s` in slot %d", rt.Name, iSlot)
+	outCh <- fmt.Sprintf("command `%s` running in slot %d with the following output:\n", rt.Name, iSlot)
 
 	go func(sCh chan *slots, cmd command.Interface, iSlot int, outCh chan<- string, name string) {
 		ok := cmd.Run(outCh)
@@ -113,9 +114,9 @@ func (cr *Router) OutputFor(req string) (<-chan string, error) {
 			)
 		}
 		if ok {
-			log.Printf("command (%s) in slot %d completed successfully", name, iSlot)
+			log.Printf("command `%s` in slot %d completed successfully", name, iSlot)
 		} else {
-			log.Printf("command (%s) in slot %d failed", name, iSlot)
+			log.Printf("command `%s` in slot %d failed", name, iSlot)
 		}
 		s := <-sCh
 		err = s.Free(iSlot)

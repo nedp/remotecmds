@@ -32,20 +32,20 @@ func NewContSequence(routeParams Params) s.RunAller {
 	cmd, err := sl.Command(id)
 	r.slots <- sl
 	if err != nil {
-		msg := fmt.Sprintf("ERROR: Couldn't find the command: %s", err.Error())
+		msg := fmt.Sprintf("Couldn't find the command in slot %d: %s", id, err.Error())
 		return s.FirstJust(sendFailure(outCh, msg)).End(outCh)
 	}
 
 	// Send the command's name and slot.
 	name := cmd.Name()
-	builder := s.FirstJust(sendCommandName(outCh, id, name))
+	builder := s.FirstJust(sendIntro(outCh, "Continuing", id, name))
 
 	// Continue the command.
 	// If a failure occurs, report it, close the channel, and end the sequence.
 	wasAlreadyContinuing, err := cmd.Cont()
 	if err != nil {
 		builder = builder.ThenJust(sendFailure(outCh, err.Error()))
-		log.Printf("failed to continue command (%s) in slot %d", name, id)
+		log.Printf("failed to continue command `%s` in slot %d", name, id)
 		return builder.End(outCh)
 	}
 
@@ -59,6 +59,6 @@ func NewContSequence(routeParams Params) s.RunAller {
 	// Close the channel
 	builder = builder.ThenJust(closeCh(outCh))
 
-	log.Printf("continuing command (%s) in slot %d", name, id)
+	log.Printf("continuing command `%s` in slot %d", name, id)
 	return builder.End(outCh)
 }
