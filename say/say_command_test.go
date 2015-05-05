@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"bitbucket.org/nedp/command"
+	"github.com/nedp/command"
 )
 
 const shortDuration = time.Second

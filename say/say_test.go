@@ -5,7 +5,7 @@ import (
 	"os/exec"
 	"testing"
 
-	//"bitbucket.org/nedp/command/sequence"
+	//"github.com/nedp/command/sequence"
 )
 
 func TestUnits(t *testing.T) {

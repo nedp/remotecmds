@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"log"
 
-	"bitbucket.org/nedp/command"
-	"bitbucket.org/nedp/command/sequence"
+	"github.com/nedp/command"
+	"github.com/nedp/command/sequence"
 )
 
 const defaultRoutesCapacity = 6

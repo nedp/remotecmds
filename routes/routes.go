@@ -1,10 +1,10 @@
 package routes
 
 import (
-	"bitbucket.org/nedp/remotecmds/router"
+	"github.com/nedp/remotecmds/router"
 
-	"bitbucket.org/nedp/remotecmds/say"
-	"bitbucket.org/nedp/remotecmds/utc"
+	"github.com/nedp/remotecmds/say"
+	"github.com/nedp/remotecmds/utc"
 )
 
 func NoParams() router.Params {

@@ -4,8 +4,8 @@ import (
 	"testing"
 	"time"
 
-	"bitbucket.org/nedp/command/sequence"
-	"bitbucket.org/nedp/command/status"
+	"github.com/nedp/command/sequence"
+	"github.com/nedp/command/status"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/BurntSushi/toml"

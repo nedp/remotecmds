@@ -3,10 +3,10 @@ package routes
 import (
 	"testing"
 
-	"bitbucket.org/nedp/remotecmds/say"
-	"bitbucket.org/nedp/remotecmds/router"
+	"github.com/nedp/remotecmds/say"
+	"github.com/nedp/remotecmds/router"
 
-	"bitbucket.org/nedp/command/sequence"
+	"github.com/nedp/command/sequence"
 
 	"github.com/stretchr/testify/assert"
 )

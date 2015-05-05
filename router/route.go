@@ -6,7 +6,7 @@ import (
 
 	"github.com/BurntSushi/toml"
 
-	"bitbucket.org/nedp/command/sequence"
+	"github.com/nedp/command/sequence"
 )
 
 const seperator = ":"

@@ -3,7 +3,7 @@ package router
 import (
 	"fmt"
 	"log"
-	s "bitbucket.org/nedp/command/sequence"
+	s "github.com/nedp/command/sequence"
 )
 
 type ContParams struct {

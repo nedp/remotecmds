@@ -15,8 +15,8 @@ import (
 	"os/exec"
 	"strings"
 
-	s "bitbucket.org/nedp/command/sequence"
-	"bitbucket.org/nedp/remotecmds/router"
+	s "github.com/nedp/command/sequence"
+	"github.com/nedp/remotecmds/router"
 )
 
 type Params struct {
@@ -29,7 +29,7 @@ func NewParams() router.Params {
 	return new(Params)
 }
 
-// Creates a new sequence (bitbucket.org/nedp/command/sequence)
+// Creates a new sequence (github.com/nedp/command/sequence)
 // for saying `quote`.
 //
 // Returns

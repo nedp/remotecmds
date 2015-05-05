@@ -9,8 +9,8 @@ import (
 	"strconv"
 	"strings"
 
-	"bitbucket.org/nedp/remotecmds/router"
-	"bitbucket.org/nedp/remotecmds/routes"
+	"github.com/nedp/remotecmds/router"
+	"github.com/nedp/remotecmds/routes"
 )
 
 const defaultPort = 7832

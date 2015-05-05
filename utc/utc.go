@@ -3,8 +3,8 @@ package utc
 import (
 	"time"
 
-	s "bitbucket.org/nedp/command/sequence"
-	"bitbucket.org/nedp/remotecmds/router"
+	s "github.com/nedp/command/sequence"
+	"github.com/nedp/remotecmds/router"
 )
 
 type Params struct {

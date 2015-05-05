@@ -3,7 +3,7 @@ package router
 import (
 	"errors"
 
-	"bitbucket.org/nedp/command"
+	"github.com/nedp/command"
 )
 
 type Slots interface {
