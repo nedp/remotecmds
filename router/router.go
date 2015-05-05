@@ -90,41 +90,45 @@ func (cr *Router) OutputFor(req string) (<-chan string, error) {
 	}
 	s := <-cr.slots
 	defer func() { cr.slots <- s }()
-
 	cmd := command.New(seq, rt.Name)
+
+	// Put the command in a slot.
 	iSlot, err := s.Add(cmd)
 	if err != nil {
 		return nil, fmt.Errorf("couldn't add a new command: %s", err.Error())
 	}
 	outCh := make(chan string, 1)
 
-	// Run the new command
-	// TODO error handling other than printing logs and crashing.
-
-	log.Printf("running command `%s` in slot %d", rt.Name, iSlot)
-	outCh <- fmt.Sprintf("command `%s` running in slot %d with the following output:\n", rt.Name, iSlot)
-
-	go func(sCh chan *slots, cmd command.Interface, iSlot int, outCh chan<- string, name string) {
-		ok := cmd.Run(outCh)
-
-		if err != nil {
-			log.Fatalf(
-				"cmdrouter.OutputFor: slot reported an error running a new command:\nt%s",
-				err.Error(),
-			)
-		}
-		if ok {
-			log.Printf("command `%s` in slot %d completed successfully", name, iSlot)
-		} else {
-			log.Printf("command `%s` in slot %d failed", name, iSlot)
-		}
-		s := <-sCh
-		err = s.Free(iSlot)
-		sCh <- s
-		if err != nil {
-			log.Printf("couldn't free slot %d: %s", iSlot, err.Error())
-		}
-	}(cr.slots, s.commands[iSlot], iSlot, outCh, rt.Name)
+	// Run and free the command in a new thread.
+	go runThenFree(cr.slots, iSlot, outCh, rt.Name)
 
 	return outCh, nil
+}
+
+func runThenFree(sCh chan *slots, iSlot int, outCh chan<- string, name string) {
+	// TODO error handling other than printing logs and crashing.
+
+	// Get the command in the specified slot.
+	s := <-sCh
+	cmd := s.commands[iSlot]
+	sCh <- s
+
+	// Run the command.
+	log.Printf("running command `%s` in slot %d", name, iSlot)
+	outCh <- fmt.Sprintf("command `%s` running in slot %d with the following output:\n",
+		name, iSlot)
+	if cmd.Run(outCh) {
+		log.Printf("command `%s` in slot %d completed successfully", name, iSlot)
+	} else {
+		log.Printf("command `%s` in slot %d failed", name, iSlot)
+	}
+
+	// Free the slot.
+	s = <-sCh
+	err := s.Free(iSlot)
+	sCh <- s
+
+	if err != nil {
+		log.Printf("couldn't free slot %d: %s", iSlot, err.Error())
+	}
 }
